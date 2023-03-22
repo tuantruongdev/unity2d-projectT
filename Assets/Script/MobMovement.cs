@@ -6,12 +6,12 @@ using UnityEngine;
 
 public class MobMovement : MonoBehaviour
 {
-    [Range(1f, 5f)]
-    public float mobRange=10f;
+    [Range(1f, 10f)]
+    private float mobRange=9f;
 
     private float horizontal = 1f;
     private float speed = 3f;
-    private float jumpingPower = 20f;
+  //  private float jumpingPower = 20f;
     private bool isFacingRight = true;
     private Vector2 spawnPos;
     [SerializeField] private Rigidbody2D rb;
@@ -21,7 +21,8 @@ public class MobMovement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        spawnPos= groundCheck.position;
+        Physics2D.IgnoreCollision(rb.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+        spawnPos = groundCheck.position;
     }
 
     // Update is called once per frame
@@ -50,11 +51,12 @@ public class MobMovement : MonoBehaviour
     }
     private bool isOutOfRange()
     {
-        Debug.Log(groundCheck.position.x +" "+ spawnPos.x);
+      //  Debug.Log(groundCheck.position.x +" "+ spawnPos.x);
         if (isFacingRight)
         {
             if(groundCheck.position.x - spawnPos.x >= mobRange)
             {
+               // Debug.Log(groundCheck.position.x - spawnPos.x +" R= "+ mobRange);
                 return true;
             }
             return false;
@@ -63,6 +65,7 @@ public class MobMovement : MonoBehaviour
         {
             if (spawnPos.x -groundCheck.position.x  >= mobRange)
             {
+             //   Debug.Log(spawnPos.x - groundCheck.position.x + " L= " + mobRange);
                 return true;
             }
             return false;
@@ -101,26 +104,26 @@ public class MobMovement : MonoBehaviour
         {
             if (rb.velocity.y > 0)
             {
-                animator.SetBool("jumping", true);
+      //          animator.SetBool("jumping", true);
             }
             else
             {
-                animator.SetBool("jumping", false);
+   //             animator.SetBool("jumping", false);
             }
 
             if (rb.velocity.y < 0)
             {
-                animator.SetBool("falling", true);
+    //            animator.SetBool("falling", true);
 
             }
             else
             {
-                animator.SetBool("falling", false);
+            //    animator.SetBool("falling", false);
             }
         }
         else
         {
-            animator.SetBool("falling", false);
+        //    animator.SetBool("falling", false);
         }
 
     }

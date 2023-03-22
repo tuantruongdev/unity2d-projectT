@@ -10,8 +10,6 @@ public class PlayerMovement : MonoBehaviour
     private float speed = 8f;
     private float jumpingPower = 20f;
     private bool isFacingRight = true;
-    private bool isHavingForce = false;
-    private Vector2 velocityLeft;
 
     [SerializeField] private Animator animator;
     [SerializeField] private Rigidbody2D rb;
@@ -28,7 +26,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         horizontal = Input.GetAxisRaw("Horizontal");
-        Debug.Log(horizontal);
+       // Debug.Log(horizontal);
         /*velocityLeft = rb.velocity;
         if(Mathf.Round(velocityLeft.x)!= 0 && !isHavingForce)
         {
@@ -123,6 +121,16 @@ public class PlayerMovement : MonoBehaviour
             animator.SetBool("falling", false);
         }
         
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        //allow pass thru mob
+        if (collision.gameObject.name.Contains("mob"))
+        {
+            Physics2D.IgnoreCollision(rb.GetComponent<Collider2D>(), collision.collider);
+        }
+     
     }
 
     private void MovementBind()
