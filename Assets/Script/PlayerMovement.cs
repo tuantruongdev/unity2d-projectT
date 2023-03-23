@@ -10,15 +10,27 @@ public class PlayerMovement : MonoBehaviour
     private float speed = 8f;
     private float jumpingPower = 20f;
     private bool isFacingRight = true;
-
+    private bool isAttacking;
+    private Vector3 baseWeaponPosition;
+    [SerializeField] private SpriteRenderer weapon;
     [SerializeField] private Animator animator;
+    [SerializeField] private Animator weaponAnimator;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform weaponTransform;
     [SerializeField] private Transform respawnPoint;
     [SerializeField] private LayerMask groundLayer;
 
+    private void Start()
+    {
+      
+
+
+    }
+
     void Update()
     {
+      //  Debug.Log(weapon.rotation);
         MovementBind();
         UpdateAnimator();
     }
@@ -26,7 +38,7 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         horizontal = Input.GetAxisRaw("Horizontal");
-       // Debug.Log(horizontal);
+        // Debug.Log(horizontal);
         /*velocityLeft = rb.velocity;
         if(Mathf.Round(velocityLeft.x)!= 0 && !isHavingForce)
         {
@@ -44,6 +56,13 @@ public class PlayerMovement : MonoBehaviour
             }));
             thread.Start();
         }*/
+
+        //if attacking then stop
+        if (isAttacking)
+        {
+            rb.velocity = Vector2.zero;
+            return;
+        }
         rb.velocity = new Vector2(horizontal * speed, rb.velocity.y);
     }
 
@@ -59,27 +78,10 @@ public class PlayerMovement : MonoBehaviour
 
         if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
         {
-            
-
-     /*       Vector3 velocity = rb.velocity;
-            if (velocity.magnitude > 0.1f)
-            {
-                Vector3 oppositeForce = -velocity.normalized * velocity.magnitude * 1f;
-                rb.AddForce(oppositeForce, ForceMode2D.Force);
-            }
-
-*/
             isFacingRight = !isFacingRight;
             Vector3 localScale = transform.localScale;
             localScale.x *= -1f;
             transform.localScale = localScale;
-            // Debug.Log(localScale);
-
-
-            /* localScale.y *= 5f;
-             localScale.z *= 5f;
-             rb.AddForce(localScale);*/
-
         }
     }
 
@@ -120,6 +122,41 @@ public class PlayerMovement : MonoBehaviour
         else{
             animator.SetBool("falling", false);
         }
+        if (isAttacking)
+        {
+            animator.SetBool("attacking", true);
+            weaponAnimator.SetBool("attacking", true);
+            animator.SetBool("running", false);
+            /*Quaternion rotate = weapon.rotation;
+            Vector2 position = weapon.position;
+
+            if (isFacingRight)
+            {
+                position.x = -3f;
+                rotate.z = -0.5f;
+                weapon.rotation = rotate;
+            }
+            else
+            {
+                position.x = 1f;
+                rotate.z = 0.5f;
+                weapon.rotation = rotate;
+            }
+            // position.y = -1.3f;
+            weapon.position = position;
+             Debug.Log(position);*/
+            
+        }
+        else
+        {
+            animator.SetBool("attacking", false);
+            weaponAnimator.SetBool("attacking", false);
+            /* Quaternion currentPos = weapon.rotation;
+             currentPos.z = 0.0f;
+             weapon.rotation = currentPos;
+ */
+            // weapon.position = basePosWeapon;
+        }
         
     }
 
@@ -130,6 +167,8 @@ public class PlayerMovement : MonoBehaviour
         {
             Physics2D.IgnoreCollision(rb.GetComponent<Collider2D>(), collision.collider);
         }
+
+
      
     }
 
@@ -168,8 +207,31 @@ public class PlayerMovement : MonoBehaviour
             tmp.x = groundCheck.position.x;
             respawnPoint.position = tmp;
         }
+        if (Input.GetKey(KeyCode.Space) && IsGrounded() && !isAttacking )
+        {
+            Vector3 tmpPos = weaponTransform.position;
+          
+            if (isFacingRight)
+            {
+                tmpPos.x += 0.5f;
+            }
+            else
+            {
+                tmpPos.x -= 0.5f;
+            }
+            tmpPos.y -= 0.5f;
+            weaponTransform.position = tmpPos;
+            isAttacking = true;
+            weapon.sortingLayerName = "Front";
+        }
 
-     //   Debug.Log(rb.velocity);
+        if (Input.GetKeyUp(KeyCode.Space))
+        {
+            isAttacking = false;
+            weapon.sortingLayerName = "Back";
+            weaponTransform.position = rb.position;
+        }
+      //  Debug.Log(weaponTransform.position);
         Flip();
     }
 }
