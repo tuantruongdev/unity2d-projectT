@@ -6,15 +6,15 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public WeaponHit weaponHit;
     private float horizontal;
     private float speed = 8f;
     private float jumpingPower = 20f;
     private bool isFacingRight = true;
     private bool isAttacking;
-    private Vector3 baseWeaponPosition;
     [SerializeField] private SpriteRenderer weapon;
     [SerializeField] private Animator animator;
-    [SerializeField] private Animator weaponAnimator;
+  //  [SerializeField] private Animator weaponAnimator;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Transform groundCheck;
     [SerializeField] private Transform weaponTransform;
@@ -23,9 +23,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Start()
     {
-      
-
-
+        weaponHit = GetComponentInChildren<WeaponHit>();
+        
     }
 
     void Update()
@@ -68,14 +67,11 @@ public class PlayerMovement : MonoBehaviour
 
     private bool IsGrounded()
     {
-     //   Debug.Log(rb.velocity.y);
         return Physics2D.OverlapCircle(groundCheck.position, 0.2f, groundLayer);
     }
 
     private void Flip()
     {
-        
-
         if (isFacingRight && horizontal < 0f || !isFacingRight && horizontal > 0f)
         {
             isFacingRight = !isFacingRight;
@@ -124,8 +120,12 @@ public class PlayerMovement : MonoBehaviour
         }
         if (isAttacking)
         {
+
+
             animator.SetBool("attacking", true);
-            weaponAnimator.SetBool("attacking", true);
+
+            weaponHit.setAttacking(true);
+            //weaponAnimator.SetBool("attacking", true);
             animator.SetBool("running", false);
             /*Quaternion rotate = weapon.rotation;
             Vector2 position = weapon.position;
@@ -145,17 +145,12 @@ public class PlayerMovement : MonoBehaviour
             // position.y = -1.3f;
             weapon.position = position;
              Debug.Log(position);*/
-            
         }
         else
         {
             animator.SetBool("attacking", false);
-            weaponAnimator.SetBool("attacking", false);
-            /* Quaternion currentPos = weapon.rotation;
-             currentPos.z = 0.0f;
-             weapon.rotation = currentPos;
- */
-            // weapon.position = basePosWeapon;
+            //weaponAnimator.SetBool("attacking", false);
+            weaponHit.setAttacking(false);
         }
         
     }
@@ -167,32 +162,36 @@ public class PlayerMovement : MonoBehaviour
         {
             Physics2D.IgnoreCollision(rb.GetComponent<Collider2D>(), collision.collider);
         }
-
-
+        //allow pass thru weapon
+        if (collision.gameObject.name.Contains("weapon"))
+        {
+            Physics2D.IgnoreCollision(rb.GetComponent<Collider2D>(), collision.collider);
+        }
      
     }
 
     private void MovementBind()
     {
-        
         if (Input.GetKeyDown(KeyCode.UpArrow) && IsGrounded())
         {
-
+            //jump
             rb.velocity = new Vector2(rb.velocity.x, jumpingPower);
-            //      GetComponent<Rigidbody2D>().velocity = new Vector3(0,7,0);
         }
 
         if (Input.GetKeyUp(KeyCode.UpArrow) && rb.velocity.y > 0f)
         {
+            //add velicity when jump
             rb.velocity = new Vector2(rb.velocity.x, rb.velocity.y * 0.5f);
         }
 
         if (Input.GetKeyDown(KeyCode.DownArrow) && !IsGrounded())
         {
+            //fast falling
             rb.velocity = new Vector2(rb.velocity.x, jumpingPower * -1);
         }
         if (Input.GetKey(KeyCode.R))
         {
+            //respawn player
             ResetVelocity();
             Vector2 tmpRespawnPoint = respawnPoint.position;
             tmpRespawnPoint.y += 1f;
@@ -200,17 +199,16 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.E) && IsGrounded())
         {
-
-            // Debug.Log(groundCheck.position);
-
+            //update respawn point
             Vector2 tmp = groundCheck.position;
             tmp.x = groundCheck.position.x;
             respawnPoint.position = tmp;
         }
         if (Input.GetKey(KeyCode.Space) && IsGrounded() && !isAttacking )
         {
+
+            //change weapon position whenever attack animation start
             Vector3 tmpPos = weaponTransform.position;
-          
             if (isFacingRight)
             {
                 tmpPos.x += 0.5f;
@@ -221,6 +219,8 @@ public class PlayerMovement : MonoBehaviour
             }
             tmpPos.y -= 0.5f;
             weaponTransform.position = tmpPos;
+
+
             isAttacking = true;
             weapon.sortingLayerName = "Front";
         }
@@ -229,9 +229,21 @@ public class PlayerMovement : MonoBehaviour
         {
             isAttacking = false;
             weapon.sortingLayerName = "Back";
-            weaponTransform.position = rb.position;
+
+
+            //calculate weapon pos to original. should be const instead of hard code like this
+            Vector3 pos = rb.position;
+            if (isFacingRight)
+            {
+                pos.x -= 0.14f;
+            }
+            else
+            {
+                pos.x += 0.14f;
+            }
+            pos.y += 0.16f;
+            weaponTransform.position = pos;
         }
-      //  Debug.Log(weaponTransform.position);
         Flip();
     }
 }
