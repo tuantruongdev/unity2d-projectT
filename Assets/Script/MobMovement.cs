@@ -13,7 +13,10 @@ public class MobMovement : MonoBehaviour
     [Range(1f, 100f)]
 
 
-    private float mobHp = 1000f;
+    public float totalTime = 0f; // total time for the countdown in seconds
+    private float startTime; // time left in the countdown
+    private  const float MAX_MOB_HP = 500f;
+    private float mobHp = MAX_MOB_HP;
     private float horizontal = 1f;
     private float speed = 3f;
     //  private float jumpingPower = 20f;
@@ -25,17 +28,24 @@ public class MobMovement : MonoBehaviour
     [SerializeField] private Transform groundCheck;
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Animator animator;
+    [SerializeField] private Transform currentHealthBar;
+    [SerializeField] private Transform baseHealthBar;
+    [SerializeField] private SpriteRenderer currentHealthBarSprite;
+    private Color baseHealthbarColor;
     private Thread animThread;
     // Start is called before the first frame update
     void Start()
     {
         Physics2D.IgnoreCollision(rb.GetComponent<Collider2D>(), GetComponent<Collider2D>());
         spawnPos = groundCheck.position;
+        UpdateHealthBarAnimator();
+        baseHealthbarColor = currentHealthBarSprite.color;
     }
 
     // Update is called once per frame
     void Update()
     {
+
 
     }
 
@@ -44,7 +54,7 @@ public class MobMovement : MonoBehaviour
         AutoMove();
         Flip();
         UpdateAnimator();
-
+        UpdateHitAnimator();
     }
 
     private void LateUpdate()
@@ -76,9 +86,12 @@ public class MobMovement : MonoBehaviour
                 EventHit eventHit = (EventHit)e;
                 this.mobHp -= eventHit.damage;
                 //updateHitAnimation();
-                Debug.Log("hitting"+Time.time);
+                //Debug.Log("hitting"+Time.time);
                 isHit = true;
-
+                startTime = Time.time;
+                totalTime = eventHit.freezeTime;
+               
+                Debug.Log(totalTime);
             }
         }
     }
@@ -191,6 +204,7 @@ public class MobMovement : MonoBehaviour
         if (isHit)
         {
             animator.SetBool("hit", true);
+            UpdateHealthBarAnimator();
             rb.velocity = Vector2.zero;
         }
         else
@@ -203,6 +217,18 @@ public class MobMovement : MonoBehaviour
 
     }
 
+    private void UpdateHitAnimator()
+    {
+        float elapsedTime = Time.time - startTime; // get the elapsed time
+        float timeLeft = Mathf.Clamp(totalTime - elapsedTime, 0f, totalTime); // calculate the time left, clamped to zero
+                                                                              //  Debug.Log(elapsedTime+"|" +timeLeft+"|"+ totalTime);
+        if (timeLeft <= 0f)
+        {
+            // countdown is over, do something
+            timeLeft = 0f; // clamp time left to zero
+            isHit = false;
+        }
+    }
 
     private bool IsGrounded(Vector2 pos)
     {
@@ -223,5 +249,35 @@ public class MobMovement : MonoBehaviour
         }
     }
 
+    private void UpdateHealthBarAnimator()
+    {
+        if(mobHp == MAX_MOB_HP)
+        {
+            currentHealthBar.gameObject.SetActive(false);
+            baseHealthBar.gameObject.SetActive(false);
+            return;
+        }
+       else {
+            Color healthBarColor = baseHealthbarColor;
+            currentHealthBar.gameObject.SetActive(true);
+            baseHealthBar.gameObject.SetActive(true);
+            Vector3 currentLocalScale = currentHealthBar.localScale;
+            Vector3 maxLocalScale = baseHealthBar.localScale;
+            float diff = mobHp / MAX_MOB_HP;
+            Debug.Log(diff);
+            healthBarColor.g *= diff;
+            healthBarColor.b *= diff;
+            currentHealthBarSprite.color = healthBarColor;
+            if (currentLocalScale.x > 0f)
+            {
+                currentLocalScale.x = (maxLocalScale.x * diff);
+            }
+            currentHealthBar.localScale = new Vector3(currentLocalScale.x, currentLocalScale.y, currentHealthBar.localScale.z);
+        }
+
+
+       
+       // currentHealthBar.wi
+    }
 
 }

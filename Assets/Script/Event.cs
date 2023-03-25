@@ -14,11 +14,13 @@ public class EventHit: Event {
 
     public int weaponId { get; private set; }
     public int damage { get; private set; }
+    public float freezeTime { get; private set; }
 
-   public EventHit(int eventId,int weaponId, int damage) : base(eventId)
+   public EventHit(int eventId,int weaponId, int damage,float freezeTime) : base(eventId)
     {
        this.weaponId = weaponId;
        this.damage = damage;   
+       this.freezeTime = freezeTime;
     }
 
 }

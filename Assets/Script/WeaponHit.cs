@@ -66,7 +66,7 @@ public class WeaponHit : MonoBehaviour
         if (other.gameObject.CompareTag("Mob")&& attacking)
         {
             GameEvents gameEvents = new GameEvents();
-            gameEvents.addEvent(new EventHit(1, 1, 1));
+            gameEvents.addEvent(new EventHit(1, 1, 8,0.2f));
             other.gameObject.SendMessage("HandleEvent",gameEvents);
            // Debug.Log("hitting mob id"+ other.gameObject.GetInstanceID());
             /*          
